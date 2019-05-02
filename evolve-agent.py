@@ -1,87 +1,84 @@
+import pickle
+
 import numpy as np
 
 import retro
 import neat
 import cv2
-import pickle
+
+env = retro.make('SuperMarioWorld-Snes', 'YoshiIsland1')
+env_reshape_tuple = ()
+time_to_xpos_dict = {}
+
+
+def reward_from_data(data):
+    reward = 0
+    reward += int(data['x_pos_player']/10)
+    reward += data['score']
+    reward += 10 * data['coins']
+    reward += 5000 * data['midway_point_flag']
+    return reward
+
+def end_genome_train_condition(data):
+    t = data['timer_hundreds']*100 + data['timer_tens']*10 + data['timer_ones']
+    time_to_xpos_dict[t] = data['x_pos_player']
+    if t+5 in time_to_xpos_dict.keys():
+        if time_to_xpos_dict[t+5] == time_to_xpos_dict[t]:
+            time_to_xpos_dict.clear()
+            return True
+
+    return False
 
 
 def eval_genomes(genomes, genome_config):
-
     for genome_id, genome in genomes:
-        ob = env.reset()
-
-        print(env.action_space.sample())
-
-        inx, iny, inc = env.observation_space.shape
-
-        print(env.observation_space.shape)
-
-        inx = int(inx/8)
-        iny = int(iny/8)
-
-        net = neat.nn.recurrent.RecurrentNetwork.create(genome, genome_config)
-
-        current_max_fitness = 0
-        fitness_current = 0
-        frame = 0
-        counter = 0
-        # xpos = 0
-        # xpos_max = 0
-
+        nn = neat.nn.recurrent.RecurrentNetwork.create(genome, genome_config)
+        genome.fitness = 0
         done = False
+
+        # cv2.namedWindow("machine_view", cv2.WINDOW_NORMAL)
+        input_prepoc = env.reset()
 
         while not done:
             env.render()
-            frame += 1
 
-            ob = cv2.resize(ob, (inx, iny))
-            ob = cv2.cvtColor(ob, cv2.COLOR_BGR2GRAY)
-            ob = np.reshape(ob, (inx, iny))
+            input_prepoc = cv2.resize(input_prepoc, env_reshape_tuple)
+            input_prepoc = cv2.cvtColor(input_prepoc, cv2.COLOR_BGR2GRAY)
+            nn_input = np.ndarray.flatten(input_prepoc)
 
-            imgarray = np.ndarray.flatten(ob)
+            # cv2.imshow("machine_view", input_prepoc)
+            # cv2.waitKey(1)
 
-            nn_output = net.activate(imgarray)
+            nn_output = nn.activate(nn_input)
 
-            ob, rew, done, info = env.step(nn_output)
+            input_prepoc, reward, done, data = env.step(nn_output)
 
-            # print("ob: {}".format(ob))
-            # print("rew: {}".format(rew))
-            # print("done: {}".format(done))
-            # print("info: {}".format(info))
+            # print(data)
 
-            fitness_current += rew
+            genome.fitness += reward
 
-            if fitness_current > current_max_fitness:
-                current_max_fitness = fitness_current
-                counter = 0
-            else:
-                counter += 1
-
-            if done or counter == 250:
+            if done or end_genome_train_condition(data) or data['lives'] == 3:
                 done = True
-                print(genome_id, fitness_current)
-
-            genome.fitness = fitness_current
+                genome.fitness += reward_from_data(data)
+                print("Genome_ID: {} \t\tFitness: {}".format(genome_id, genome.fitness))
 
 
 if __name__ == "__main__":
-    env = retro.make('SuperMarioWorld-Snes', 'DonutPlains1')
-
     config = neat.Config(neat.DefaultGenome,
                          neat.DefaultReproduction,
                          neat.DefaultSpeciesSet,
                          neat.DefaultStagnation,
                          'neat-config')
 
-    p = neat.Population(config)
+    pop = neat.Population(config)
+    pop.add_reporter(neat.StdOutReporter(True))
+    pop.add_reporter(neat.StatisticsReporter())
+    pop.add_reporter(neat.Checkpointer(1))
 
-    p.add_reporter(neat.StdOutReporter(True))
-    stats = neat.StatisticsReporter()
-    p.add_reporter(stats)
-    p.add_reporter(neat.Checkpointer(1))
+    in_x, in_y, _ = env.observation_space.shape
+    env_reshape_tuple = (int(in_x/8), int(in_y/8))
 
-    winner = p.run(eval_genomes)
+    best_genome = pop.run(eval_genomes)
 
-    with open('winner.pkl', 'wb') as output:
-        pickle.dump(winner, output, 1)
+    with open('best_genome.pkl', 'wb') as output:
+        pickle.dump(best_genome, output, 1)
