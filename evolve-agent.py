@@ -13,8 +13,8 @@ time_to_xpos_dict = {}
 
 def reward_from_data(data):
     reward = 0
-    reward += int(data['x_pos_player']/10)
-    reward += data['score']
+    reward += int(data['x_pos_player'])
+    reward += 10 * data['score']
     reward += 10 * data['coins']
     reward += 5000 * data['midway_point_flag']
     return reward
