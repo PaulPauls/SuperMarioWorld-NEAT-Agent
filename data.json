@@ -1,0 +1,40 @@
+{
+  "info": {
+    "x_pos_player": {
+      "address": 8257745,
+      "type": "|u2"
+    },
+    "score": {
+      "address": 8261428,
+      "type": "<u4"
+    },
+    "coins": {
+      "address": 8261055,
+      "type": "|u1"
+    },
+    "lives": {
+      "address": 8261054,
+      "type": "|i1"
+    },
+    "midway_point_flag": {
+      "address": 8262606,
+      "type": "|u1"
+    },
+    "timer_hundreds": {
+      "address": 8261425,
+      "type": "|u1"
+    },
+    "timer_tens": {
+      "address": 8261426,
+      "type": "|u1"
+    },
+    "timer_ones": {
+      "address": 8261427,
+      "type": "|u1"
+    },
+    "level_exit_info": {
+      "address": 8261077,
+      "type": "|u1"
+    }
+  }
+}
