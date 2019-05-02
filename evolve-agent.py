@@ -14,8 +14,8 @@ time_to_xpos_dict = {}
 def reward_from_data(data):
     reward = 0
     reward += int(data['x_pos_player'])
-    reward += 10 * data['score']
-    reward += 10 * data['coins']
+    reward += data['score']
+    reward += data['coins']
     reward += 5000 * data['midway_point_flag']
     return reward
 
@@ -70,13 +70,16 @@ if __name__ == "__main__":
                          neat.DefaultStagnation,
                          'neat-config')
 
+    in_x, in_y, _ = env.observation_space.shape
+    env_reshape_tuple = (int(in_x / 8), int(in_y / 8))
+
     pop = neat.Population(config)
     pop.add_reporter(neat.StdOutReporter(True))
     pop.add_reporter(neat.StatisticsReporter())
     pop.add_reporter(neat.Checkpointer(5))
 
-    in_x, in_y, _ = env.observation_space.shape
-    env_reshape_tuple = (int(in_x/8), int(in_y/8))
+    # If already trained some, load the current training checkpoint
+    # pop = neat.Checkpointer.restore_checkpoint('neat-checkpoint-x')
 
     best_genome = pop.run(eval_genomes)
 
