@@ -73,7 +73,7 @@ if __name__ == "__main__":
     pop = neat.Population(config)
     pop.add_reporter(neat.StdOutReporter(True))
     pop.add_reporter(neat.StatisticsReporter())
-    pop.add_reporter(neat.Checkpointer(1))
+    pop.add_reporter(neat.Checkpointer(5))
 
     in_x, in_y, _ = env.observation_space.shape
     env_reshape_tuple = (int(in_x/8), int(in_y/8))
