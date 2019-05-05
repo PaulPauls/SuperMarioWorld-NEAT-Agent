@@ -14,7 +14,9 @@ The in-game data OpenAI's retro environment provides for Super Mario World has b
 
 
 
-#### Setup ####
+---
+
+#### Setup and Execute ####
 
 1. Replace the standard `data.json` in the installation directory of the retro package. Assuming Python 3.7 in a virtualenv:
 ```
