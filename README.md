@@ -20,10 +20,10 @@ The in-game data OpenAI's retro environment provides for Super Mario World has b
 
 1. Replace the standard `data.json` in the installation directory of the retro package. Assuming Python 3.7 in a virtualenv:
 ```
-cp -f ./data.json ./venv/lib/python3.7/site-packages/retro/data/stable/SuperMarioWorld-Snes/
+$ cp -f ./data.json ./venv/lib/python3.7/site-packages/retro/data/stable/SuperMarioWorld-Snes/
 ```
 
 2. Configure HyperParameters of `neat-config` as well as those in `evolve-agent.py`
 
-3. Execute evolve agent
+3. Execute `$ python3 evolve-agent.py`
 
